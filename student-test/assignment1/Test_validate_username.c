@@ -1,6 +1,9 @@
 #include "unity.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 #include "../../examples/autotest-validate/autotest-validate.h"
 #include "../../assignment-autotest/test/assignment1/username-from-conf-file.h"
 
@@ -18,5 +21,28 @@ void test_validate_my_username()
      * TODO: Replace the line below with your code here as described above to verify your /conf/username.txt 
      * config file and my_username() functions are setup properly
      */
-    TEST_ASSERT_TRUE_MESSAGE(false,"AESD students, please fix me!");
+    char *username_from_conf = malloc_username_from_conf_file();
+    if (username_from_conf == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+    }
+
+    // Directly use the constant string for the second username
+    const char *username_const = my_username();
+
+    // Allocate memory for the destination arrays
+    char dest1[100]; // Ensure the destination array is large enough
+    char dest2[100];
+
+    // Copy the strings
+    strcpy(dest1, username_from_conf);
+    strcpy(dest2, username_const);
+
+    // Print the copied strings
+    printf("Username from conf file: %s\n", dest1);
+    printf("My username: %s\n", dest2);
+
+    // Free dynamically allocated memory
+    free(username_from_conf);
+
+    TEST_ASSERT_EQUAL_STRING_MESSAGE(dest1, dest2,"DIFFERENT USERNAME");
 }
