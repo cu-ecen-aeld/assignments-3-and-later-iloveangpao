@@ -16,7 +16,7 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
+    system(cmd);
     return true;
 }
 
@@ -58,6 +58,31 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
+    pid_t pid = fork();
+    if(pid == -1){
+        perror("fork");
+        va_end(args);
+        return false;
+    }
+    if(pid == 0){
+        execv(command[0], command);
+        perror("execv");
+        exit(EXIT_FAILURE);
+    }
+    if(pid > 0){
+        int status;
+        pid_t wpid = waitpid(pid, &status, 0);
+        if(wpid == -1){
+            perror("waitpid");
+            va_end(args);
+            return false;
+        }
+        if(WIFEXITED(status)){
+            int exit_status = WEXITSTATUS(status);
+            va_end(args);
+            return exit_status == 0;
+        }
+    }
 
     va_end(args);
 
@@ -92,6 +117,43 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
+    pid_t kidpid;
+    int fd = open(outputfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0) {
+        perror("open"); 
+        abort();
+    } 
+
+    switch (kidpid = fork()) {
+        case -1: 
+            perror("fork"); 
+            abort();
+        case 0:
+            if (dup2(fd, STDOUT_FILENO) < 0) { 
+                perror("dup2"); 
+                abort(); 
+            }
+            close(fd);
+            execv(command[0], command); 
+            perror("execv"); 
+            abort();
+        default:
+            close(fd);
+            int status;
+            pid_t wpid = waitpid(kidpid, &status, 0);
+            if(wpid == -1){
+                perror("waitpid");
+                va_end(args);
+                return false;
+            }
+            if(WIFEXITED(status)){
+                int exit_status = WEXITSTATUS(status);
+                va_end(args);
+                return exit_status == 0;
+            }
+            /* do whatever the parent wants to do. */
+    }
+
 
     va_end(args);
 
