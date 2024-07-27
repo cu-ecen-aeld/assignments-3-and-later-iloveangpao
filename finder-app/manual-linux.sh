@@ -5,18 +5,18 @@
 set -e
 set -u
 
-mkdir -p /usr/local/arm-cross-compiler/
-cd /usr/local/arm-cross-compiler/
-GCC_ARM_VERSION=10.3-2021.07
-wget -O gcc-arm.tar.xz \
-https://developer.arm.com/-/media/Files/downloads/gnu-a/$GCC_ARM_VERSION/binrel/gcc-arm-$GCC_ARM_VERSION-x86_64-aarch64-none-linux-gnu.tar.xz && \
-mkdir -p install && \
-tar x -C install -f gcc-arm.tar.xz && \
-rm -r gcc-arm.tar.xz
-export PATH="${PATH}:/usr/local/arm-cross-compiler/install/gcc-arm-$GCC_ARM_VERSION-x86_64-aarch64-none-linux-gnu/bin"
-echo "PATH="${PATH}:/usr/local/arm-cross-compiler/install/gcc-arm-$GCC_ARM_VERSION-x86_64-aarch64-none-linux-gnu/bin"" >> ~/.profile
-sed -i "/^# If not running interactively, don't do anything.*/i export PATH=\$PATH:$(find /usr/local/arm-cross-compiler/install -maxdepth 2 -type d -name bin)" \
-        /root/.bashrc
+# mkdir -p /usr/local/arm-cross-compiler/
+# cd /usr/local/arm-cross-compiler/
+# GCC_ARM_VERSION=10.3-2021.07
+# wget -O gcc-arm.tar.xz \
+# https://developer.arm.com/-/media/Files/downloads/gnu-a/$GCC_ARM_VERSION/binrel/gcc-arm-$GCC_ARM_VERSION-x86_64-aarch64-none-linux-gnu.tar.xz && \
+# mkdir -p install && \
+# tar x -C install -f gcc-arm.tar.xz && \
+# rm -r gcc-arm.tar.xz
+# export PATH="${PATH}:/usr/local/arm-cross-compiler/install/gcc-arm-$GCC_ARM_VERSION-x86_64-aarch64-none-linux-gnu/bin"
+# echo "PATH="${PATH}:/usr/local/arm-cross-compiler/install/gcc-arm-$GCC_ARM_VERSION-x86_64-aarch64-none-linux-gnu/bin"" >> ~/.profile
+# sed -i "/^# If not running interactively, don't do anything.*/i export PATH=\$PATH:$(find /usr/local/arm-cross-compiler/install -maxdepth 2 -type d -name bin)" \
+#         /root/.bashrc
 
 
 
@@ -55,7 +55,7 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     make ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- mrproper
     make ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- defconfig
     echo building the kernel ...
-    make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu-
+    make -j1 ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu-
 fi
 
 echo "Adding the Image in outdir"
@@ -87,7 +87,7 @@ fi
 
 #make distclean
 make ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- defconfig
-make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu-
+make -j1 ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu-
 make CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=arm64 CROSS_COMPILE=aarch64-none-linux-gnu- install
 # TODO: Make and install busybox
 cd ${OUTDIR}/rootfs
